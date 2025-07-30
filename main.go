@@ -1,23 +1,100 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+const USDToEuro float64 = 0.85
+const USDToRub float64 = 79.40
 
 func main() {
-	const USDToEuro float64 = 0.8525
-	const USDToRub float64 = 79.40
 
-	amount := getUserInput()
+	var err error
+	var sourceValuta string
+	var targetValuta string
+	var amount float64
 
-	eurosToRubles := amount / USDToEuro * USDToRub
+	for {
+		fmt.Print("Введите исходную валюту (USD, RUB, EUR): ")
+		sourceValuta, err = getValuta()
 
-	fmt.Print(eurosToRubles)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		break
+	}
+	for {
+		fmt.Print("Введите сумму: ")
+		amount, err = getAmount()
+
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		break
+	}
+	for {
+		fmt.Print("Введите целевую валюту (USD, RUB, EUR): ")
+		targetValuta, err = getValuta()
+
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		break
+	}
+
+	convert(amount, sourceValuta, targetValuta)
+
+	// eurosToRubles := amount / USDToEuro * USDToRub
 }
 
-func getUserInput() float64 {
+func getAmount() (float64, error) {
 	var amount float64
+
 	fmt.Scan(&amount)
 
-	return amount
+	if amount <= 0 {
+		return 0, errors.New("Ошибка ввода суммы, некорректное значение")
+	}
+
+	return amount, nil
 }
 
-func convert(amount float64, convertFrom string, convertTo string) {}
+func getValuta() (string, error) {
+	var valuta string
+
+	fmt.Scan(&valuta)
+
+	if valuta == "RUB" || valuta == "USD" || valuta == "EUR" {
+		return valuta, nil
+	} else {
+		return "", errors.New("Ошибка ввода валюты, некорректное значение")
+	}
+}
+
+func convert(amount float64, sourceValuta string, targetValuta string) {
+
+	switch targetValuta {
+	case "USD":
+		if sourceValuta == "RUB" {
+			fmt.Printf("Ваше перевод рублей в доллары: \n%.2f", amount/USDToRub)
+		} else {
+			fmt.Printf("Ваше перевод евро в доллары: \n%.2f", amount/USDToEuro)
+		}
+	case "EUR":
+		if sourceValuta == "RUB" {
+			fmt.Printf("Ваше перевод рублей в евро: \n%.2f", amount/USDToRub*USDToEuro)
+		} else {
+			fmt.Printf("Ваше перевод долларов в евро: \n%.2f", amount*USDToEuro)
+		}
+	case "RUB":
+		if sourceValuta == "USD" {
+			fmt.Printf("Ваше перевод долларов в рубли: \n%.2f", amount*USDToRub)
+		} else {
+			fmt.Printf("Ваше перевод евро в рубли: \n%.2f", amount*USDToEuro*USDToRub)
+		}
+	}
+}
