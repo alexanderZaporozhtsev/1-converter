@@ -5,9 +5,10 @@ import (
 	"fmt"
 )
 
+const USDToEuro float64 = 0.85
+const USDToRub float64 = 79.40
+
 func main() {
-	const USDToEuro float64 = 0.8525
-	const USDToRub float64 = 79.40
 
 	var err error
 	var sourceValuta string
@@ -45,7 +46,7 @@ func main() {
 		break
 	}
 
-	fmt.Println(sourceValuta, amount, targetValuta)
+	convert(amount, sourceValuta, targetValuta)
 
 	// eurosToRubles := amount / USDToEuro * USDToRub
 }
@@ -74,6 +75,26 @@ func getValuta() (string, error) {
 	}
 }
 
-func convert(amount float64, convertFrom string, convertTo string) {
+func convert(amount float64, sourceValuta string, targetValuta string) {
 
+	switch targetValuta {
+	case "USD":
+		if sourceValuta == "RUB" {
+			fmt.Printf("Ваше перевод рублей в доллары: \n%.2f", amount/USDToRub)
+		} else {
+			fmt.Printf("Ваше перевод евро в доллары: \n%.2f", amount/USDToEuro)
+		}
+	case "EUR":
+		if sourceValuta == "RUB" {
+			fmt.Printf("Ваше перевод рублей в евро: \n%.2f", amount/USDToRub*USDToEuro)
+		} else {
+			fmt.Printf("Ваше перевод долларов в евро: \n%.2f", amount*USDToEuro)
+		}
+	case "RUB":
+		if sourceValuta == "USD" {
+			fmt.Printf("Ваше перевод долларов в рубли: \n%.2f", amount*USDToRub)
+		} else {
+			fmt.Printf("Ваше перевод евро в рубли: \n%.2f", amount*USDToEuro*USDToRub)
+		}
+	}
 }
