@@ -1,100 +1,117 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 )
 
-const USDToEuro float64 = 0.85
-const USDToRub float64 = 79.40
-
 func main() {
-
-	var err error
-	var sourceValuta string
-	var targetValuta string
 	var amount float64
+	var sourceCurrency string
+	var targetCurrency string
+	var result float64
+	var err error
+
+	currency := map[string]float64{
+		"USD": 1,
+		"EUR": 0.8563,
+		"RUB": 80.19,
+	}
+	currencyPointer := &currency
 
 	for {
-		fmt.Print("Введите исходную валюту (USD, RUB, EUR): ")
-		sourceValuta, err = getValuta()
-
+		sourceCurrency, err = getSourceCurrency(currencyPointer)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Printf("ошибка конвертации: %v\n", err)
 			continue
 		}
 		break
 	}
+
 	for {
-		fmt.Print("Введите сумму: ")
+		targetCurrency, err = getTargetCurrency(currencyPointer)
+		if err != nil {
+			fmt.Printf("ошибка конвертации: %v\n", err)
+			continue
+		}
+		break
+	}
+
+	for {
 		amount, err = getAmount()
-
 		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-		break
-	}
-	for {
-		fmt.Print("Введите целевую валюту (USD, RUB, EUR): ")
-		targetValuta, err = getValuta()
-
-		if err != nil {
-			fmt.Println(err)
+			fmt.Printf("ошибка конвертации: %v\n", err)
 			continue
 		}
 		break
 	}
 
-	convert(amount, sourceValuta, targetValuta)
+	result = convert(amount, sourceCurrency, targetCurrency, currencyPointer)
+	fmt.Printf("Результат конвертации %s в %s = %v\n", sourceCurrency, targetCurrency, result)
 
-	// eurosToRubles := amount / USDToEuro * USDToRub
+}
+
+func getSourceCurrency(currency *map[string]float64) (string, error) {
+	if currency == nil {
+		return "", fmt.Errorf("передан nil вместо map")
+	}
+
+	fmt.Print("Введите исходную валюту (USD, RUB, EUR): ")
+	var sourceCurrency string
+	_, err := fmt.Scan(&sourceCurrency)
+	if err != nil {
+		return "", fmt.Errorf("ошибка ввода: %v", err)
+	}
+
+	_, ok := (*currency)[sourceCurrency]
+	if !ok {
+		return "", fmt.Errorf("валюта %s не поддерживается", sourceCurrency)
+	}
+
+	return sourceCurrency, nil
+}
+
+func getTargetCurrency(currency *map[string]float64) (string, error) {
+	if currency == nil {
+		return "", fmt.Errorf("передан nil вместо map")
+	}
+
+	fmt.Print("Введите целевую валюту (USD, RUB, EUR): ")
+	var targetCurrency string
+	_, err := fmt.Scan(&targetCurrency)
+	if err != nil {
+		return "", fmt.Errorf("ошибка ввода: %v", err)
+	}
+
+	_, ok := (*currency)[targetCurrency]
+	if !ok {
+		return "", fmt.Errorf("валюта %s не поддерживается", targetCurrency)
+	}
+
+	return targetCurrency, nil
 }
 
 func getAmount() (float64, error) {
+	fmt.Print("Введите сумму: ")
 	var amount float64
-
-	fmt.Scan(&amount)
-
-	if amount <= 0 {
-		return 0, errors.New("Ошибка ввода суммы, некорректное значение")
+	_, err := fmt.Scan(&amount)
+	if err != nil || amount < 0 {
+		return 0, fmt.Errorf("введите положительное число")
 	}
 
 	return amount, nil
 }
 
-func getValuta() (string, error) {
-	var valuta string
+func convert(
+	amount float64,
+	source string,
+	target string,
+	currency *map[string]float64,
+) float64 {
+	var result float64
 
-	fmt.Scan(&valuta)
+	sourceRate := (*currency)[source]
+	targetRate := (*currency)[target]
 
-	if valuta == "RUB" || valuta == "USD" || valuta == "EUR" {
-		return valuta, nil
-	} else {
-		return "", errors.New("Ошибка ввода валюты, некорректное значение")
-	}
-}
-
-func convert(amount float64, sourceValuta string, targetValuta string) {
-
-	switch targetValuta {
-	case "USD":
-		if sourceValuta == "RUB" {
-			fmt.Printf("Ваше перевод рублей в доллары: \n%.2f", amount/USDToRub)
-		} else {
-			fmt.Printf("Ваше перевод евро в доллары: \n%.2f", amount/USDToEuro)
-		}
-	case "EUR":
-		if sourceValuta == "RUB" {
-			fmt.Printf("Ваше перевод рублей в евро: \n%.2f", amount/USDToRub*USDToEuro)
-		} else {
-			fmt.Printf("Ваше перевод долларов в евро: \n%.2f", amount*USDToEuro)
-		}
-	case "RUB":
-		if sourceValuta == "USD" {
-			fmt.Printf("Ваше перевод долларов в рубли: \n%.2f", amount*USDToRub)
-		} else {
-			fmt.Printf("Ваше перевод евро в рубли: \n%.2f", amount*USDToEuro*USDToRub)
-		}
-	}
+	result = (amount / sourceRate) * targetRate
+	return result
 }
