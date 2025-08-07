@@ -4,6 +4,8 @@ import (
 	"fmt"
 )
 
+type currencyAlias = map[string]float64
+
 func main() {
 	var amount float64
 	var sourceCurrency string
@@ -50,7 +52,7 @@ func main() {
 
 }
 
-func getSourceCurrency(currency *map[string]float64) (string, error) {
+func getSourceCurrency(currency *currencyAlias) (string, error) {
 	if currency == nil {
 		return "", fmt.Errorf("передан nil вместо map")
 	}
@@ -70,7 +72,7 @@ func getSourceCurrency(currency *map[string]float64) (string, error) {
 	return sourceCurrency, nil
 }
 
-func getTargetCurrency(currency *map[string]float64) (string, error) {
+func getTargetCurrency(currency *currencyAlias) (string, error) {
 	if currency == nil {
 		return "", fmt.Errorf("передан nil вместо map")
 	}
@@ -105,7 +107,7 @@ func convert(
 	amount float64,
 	source string,
 	target string,
-	currency *map[string]float64,
+	currency *currencyAlias,
 ) float64 {
 	var result float64
 
